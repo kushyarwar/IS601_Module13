@@ -22,7 +22,7 @@ def test_register_valid_data(page, live_server):
 
 
 def test_login_valid_credentials(page, live_server):
-    httpx.post(f"{SERVER_URL}/users/register", json={
+    httpx.post(f"{SERVER_URL}/register", json={
         "email": "loginuser@example.com",
         "password": "securepass123",
     })
@@ -50,7 +50,7 @@ def test_register_short_password_shows_frontend_error(page, live_server):
 
 
 def test_login_wrong_password_shows_error(page, live_server):
-    httpx.post(f"{SERVER_URL}/users/register", json={
+    httpx.post(f"{SERVER_URL}/register", json={
         "email": "wrongpass@example.com",
         "password": "correctpass123",
     })

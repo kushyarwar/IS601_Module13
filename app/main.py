@@ -16,8 +16,9 @@ app = FastAPI(title="Calculator API - Module 13", version="5.0.0")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-# ── User Routes ────────────────────────────────────────────────────────────
+# ── Auth Routes (/register and /login as required by spec) ────────────────
 
+@app.post("/register", response_model=schemas.RegisterResponse, status_code=201)
 @app.post("/users/register", response_model=schemas.RegisterResponse, status_code=201)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     effective_username = user.username or user.email.split("@")[0]
@@ -42,6 +43,7 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     )
 
 
+@app.post("/login", response_model=schemas.LoginResponse)
 @app.post("/users/login", response_model=schemas.LoginResponse)
 def login_user(credentials: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == credentials.email).first()
