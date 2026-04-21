@@ -1,6 +1,6 @@
 # IS601 Module 13 – JWT Login/Registration + Playwright E2E Testing
 
-FastAPI back-end with JWT authentication, front-end registration and login pages, and Playwright E2E tests — all wired into a CI/CD pipeline that deploys to Docker Hub.
+FastAPI back-end with JWT authentication, front-end registration and login pages, and Playwright E2E tests, all wired into a CI/CD pipeline that deploys to Docker Hub.
 
 ## Docker Hub
 
@@ -18,24 +18,32 @@ docker run -p 8000:8000 \
 
 ---
 
-## Running Locally (Docker Compose)
+## Running the Front-End Locally
+
+Start the full stack with Docker Compose:
 
 ```bash
 docker-compose up --build
 ```
 
-| Service | URL |
-|---------|-----|
-| API + Swagger | http://localhost:8000/docs |
-| Register page | http://localhost:8000/static/register.html |
-| Login page | http://localhost:8000/static/login.html |
+Then open your browser:
+
+| Page | URL |
+|------|-----|
+| Register | http://localhost:8000/static/register.html |
+| Login | http://localhost:8000/static/login.html |
+| API Swagger Docs | http://localhost:8000/docs |
 | pgAdmin | http://localhost:5050 (admin@admin.com / admin) |
+
+The register page requires a valid email, a password of at least 8 characters, and a matching confirm password field. All validation runs in the browser before any API call is made. On success, the JWT token is stored in localStorage.
+
+The login page accepts email and password. On success it stores the JWT and shows a success message. On wrong credentials it shows an error message without exposing whether the email exists.
 
 ---
 
 ## Running Integration Tests Locally
 
-Tests use **SQLite** locally — no Postgres required.
+Tests use **SQLite** locally so no Postgres is required.
 
 ```bash
 pip install -r requirements.txt
@@ -50,11 +58,17 @@ pytest tests/ --ignore=tests/e2e -v --cov=app --cov-report=term-missing
 # Install Playwright browser (first time only)
 playwright install chromium
 
-# Run E2E tests (starts a local server automatically)
+# Run all 4 E2E tests
 pytest tests/e2e/ -v
 ```
 
-The E2E conftest starts a throwaway SQLite-backed server on port 8001, runs the 4 browser tests, then shuts it down.
+The E2E test suite automatically starts a local SQLite-backed server on port 8001 before the tests run and shuts it down when they finish. No manual server setup is needed.
+
+The 4 tests cover:
+- Positive: register with valid data, confirm success message
+- Positive: login with correct credentials, confirm success message
+- Negative: register with short password, confirm front-end error shown (no server call)
+- Negative: login with wrong password, confirm error message after 401 response
 
 ---
 
@@ -89,9 +103,9 @@ The E2E conftest starts a throwaway SQLite-backed server on port 8001, runs the 
 | PUT | `/calculations/{id}` | Edit (recomputes result) |
 | POST | `/calculations/` | Add new |
 | DELETE | `/calculations/{id}` | Delete |
-| GET | `/calculations/join/all` | Calculations with username |
+| GET | `/calculations/join/all` | Calculations joined with username |
 
-Supported types: `Add`, `Sub`, `Multiply`, `Divide`
+Supported operation types: `Add`, `Sub`, `Multiply`, `Divide`
 
 ---
 
@@ -99,9 +113,9 @@ Supported types: `Add`, `Sub`, `Multiply`, `Divide`
 
 GitHub Actions (`.github/workflows/ci.yml`):
 
-1. **Integration tests** — spins up PostgreSQL 15, runs `pytest` against a real Postgres DB
-2. **Playwright E2E tests** — runs 4 browser tests (register positive/negative, login positive/negative) against a SQLite-backed local server
-3. **Docker build & push** — on successful merge to `main`, builds and pushes `kushyarwar/is601-module13:latest`
+1. **Integration tests** — spins up PostgreSQL 15, installs dependencies, runs `pytest` against a real Postgres DB
+2. **Playwright E2E tests** — installs Chromium, runs 4 browser tests against a SQLite-backed local server
+3. **Docker build and push** — on successful merge to `main`, builds and pushes `kushyarwar/is601-module13:latest`
 4. **Trivy scan** — vulnerability scan on the pushed image
 
 Required GitHub Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
@@ -110,16 +124,14 @@ Required GitHub Secrets: `DOCKERHUB_USERNAME`, `DOCKERHUB_TOKEN`
 
 ## Screenshots
 
-*(Add your screenshots here after a successful CI run)*
+### GitHub Actions – CI/CD Workflow Passing
+![GitHub Actions](Screenshots/1.png)
 
-### GitHub Actions – Workflow Passing
-![GitHub Actions](Screenshots/github_actions.png)
+### Register Page – Success After Registration
+![Register Page](Screenshots/2.png)
 
-### Playwright E2E Tests Passing
-![Playwright Tests](Screenshots/playwright_tests.png)
+### Login Page – Success After Login
+![Login Page](Screenshots/3.png)
 
-### Register Page
-![Register Page](Screenshots/register_page.png)
-
-### Login Page
-![Login Page](Screenshots/login_page.png)
+### Playwright E2E Tests – All 4 Passing
+![Playwright Tests](Screenshots/4.png)
