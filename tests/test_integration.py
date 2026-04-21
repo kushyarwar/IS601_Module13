@@ -83,7 +83,7 @@ def test_register_duplicate_username_rejected(client):
     res = client.post("/users/register", json={
         "username": "charlie",
         "email": "c2@example.com",
-        "password": "p",
+        "password": "pass1234",
     })
     assert res.status_code == 400
 
@@ -93,7 +93,7 @@ def test_register_duplicate_email_rejected(client):
     res = client.post("/users/register", json={
         "username": "dave2",
         "email": "dave@example.com",
-        "password": "p",
+        "password": "pass1234",
     })
     assert res.status_code == 400
 
@@ -147,8 +147,8 @@ def test_login_nonexistent_user(client):
 
 
 def test_login_response_omits_password(client):
-    _register(client, "henry", password="secret")
-    res = _login(client, "henry@example.com", "secret")
+    _register(client, "henry", password="secret123")
+    res = _login(client, "henry@example.com", "secret123")
     user_data = res.json()["user"]
     assert "password" not in user_data
     assert "password_hash" not in user_data
@@ -156,12 +156,12 @@ def test_login_response_omits_password(client):
 
 def test_login_verifies_hashed_password_in_db(client, db_session):
     from app import models
-    _register(client, "iris", password="mypass")
+    _register(client, "iris", password="mypass123")
     user = db_session.query(models.User).filter_by(username="iris").first()
     assert user is not None
-    assert user.password_hash != "mypass"
+    assert user.password_hash != "mypass123"
     from app.auth import verify_password
-    assert verify_password("mypass", user.password_hash)
+    assert verify_password("mypass123", user.password_hash)
 
 
 # ── User Read/Delete Tests ────────────────────────────────────────────────────

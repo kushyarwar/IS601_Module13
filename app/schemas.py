@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, model_validator
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from datetime import datetime
 from typing import Optional
 
@@ -10,7 +10,7 @@ from app.calculator import OperationType
 class UserCreate(BaseModel):
     username: Optional[str] = None
     email: EmailStr
-    password: str
+    password: str = Field(min_length=8)
 
 
 class UserLogin(BaseModel):
