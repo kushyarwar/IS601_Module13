@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+        h1 { text-align: center; margin-bottom: 28px; color: #333; font-size: 24px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #555; font-size: 14px; }
+        input { width: 100%; padding: 10px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 15px; transition: border-color 0.2s; }
+        input:focus { outline: none; border-color: #2196F3; }
+        button { width: 100%; padding: 12px; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 8px; transition: background 0.2s; }
+        button:hover { background: #1976D2; }
+        #error-msg { color: #d32f2f; margin-top: 16px; padding: 10px 12px; background: #ffebee; border-radius: 4px; display: none; font-size: 14px; }
+        #success-msg { color: #2e7d32; margin-top: 16px; padding: 10px 12px; background: #e8f5e9; border-radius: 4px; display: none; font-size: 14px; }
+        .register-link { text-align: center; margin-top: 20px; font-size: 14px; color: #555; }
+        .register-link a { color: #2196F3; text-decoration: none; }
+        .register-link a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Login</h1>
+        <form id="login-form">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Your password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <div id="error-msg"></div>
+        <div id="success-msg"></div>
+        <div class="register-link">Don't have an account? <a href="/static/register.html">Register</a></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const errorMsg = document.getElementById('error-msg');
+        const successMsg = document.getElementById('success-msg');
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
+        }
+
+        function showSuccess(msg) {
+            successMsg.textContent = msg;
+            successMsg.style.display = 'block';
+            errorMsg.style.display = 'none';
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!emailRegex.test(email)) {
+                showError('Please enter a valid email address.');
+                return;
+            }
+            if (!password) {
+                showError('Password is required.');
+                return;
+            }
+
+            try {
+                const res = await fetch('/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password }),
+                });
+                const data = await res.json();
+                if (res.status === 200) {
+                    localStorage.setItem('jwt_token', data.token);
+                    showSuccess('Login successful! Welcome back, ' + data.user.email + '.');
+                } else if (res.status === 401) {
+                    showError('Invalid email or password.');
+                } else {
+                    showError(data.detail || 'Login failed. Please try again.');
+                }
+            } catch (err) {
+                showError('Network error. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

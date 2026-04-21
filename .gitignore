@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+*.db
+*.sqlite3
+
+# Playwright
+playwright-report/
+test-results/
+.playwright/
+
+# Docker
+.dockerignore
+
+# Environment
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
